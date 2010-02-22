@@ -1,0 +1,8 @@
+Server for exchanging community currencies.
+
+Command-line only for now, still heavily in need of development.
+
+
+Examples to try:
+
+cat examples/equalbids | python daemon.py
