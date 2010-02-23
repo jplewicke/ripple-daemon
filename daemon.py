@@ -23,9 +23,9 @@ def process_all_bids():
 		#plt.draw()
 		bid = bid.split(',')
 		process_bid(G,bid)
-		plt.clf()
-		nx.draw_shell(G)
-		time.sleep(1)
+		#plt.clf()
+		#nx.draw_shell(G)
+		#time.sleep(1)
 
 def get_pred_path(G,v1,v2):
 	pred = nx.floyd_warshall(G)[1]
@@ -61,13 +61,24 @@ def find_min_capacity(edges):
 		nontrans.append((e[0],e[1],new_cap,e[2][1]['capacity'],e[2][1]['info']))
 		gain = gain * e[2][1]['gain'] / gain_adj
 
-	print list(nontrans)
+	#print list(nontrans)
 
 	return transaction
 
 def transaction_announce(transaction):
-	print len(transaction)
+	print list(transaction)
 	pass
+
+def bid_announce(edge,n1,n2,type):
+	info = edge[1]['info']
+	s = "%s %s" % (type, edge[1]['info'])
+
+	print '%s: %0.f %s for at least %0.f %s per %s' % (s, edge[1]['capacity'],
+			n1, 1 / edge[1]['gain'], n2, n1)
+
+
+
+	#print 'New high bid: up to %0.f %s for each %s' % (gain, n1, n2)
 
 def transact_bid(G,n1,n2,edge):
 
@@ -125,6 +136,7 @@ def process_bid(G,bid):
 
 		if G[n1][n2]['weight'] < weight:
 			#Add it to the edge queue.
+			bid_announce(edge,n1,n2,'low')
 			heappush(G[n1][n2]['q'],edge)
 
 			#print 'edge queue insert %f' % weight
@@ -132,7 +144,7 @@ def process_bid(G,bid):
 			while ((shortest_path_weight(G,n2,n1) + weight < 0.0)
 			 		and (edge[1]['capacity'] > 0.0)):
 
-				print 'transaction possible; edge update'
+				bid_announce(edge,n1,n2,'high_winning')
 				transact_bid(G,n1,n2,edge)
 
 			if edge[1]['capacity'] > 0.0:
@@ -145,16 +157,16 @@ def process_bid(G,bid):
 				G[n1][n2]['e'] = edge
 				G[n1][n2]['weight'] = weight
 
-				#print 'new edge queue head: was %f , is %f' % (former_weight, weight)
-
+				bid_announce(edge,n1,n2,'high')
 	else:
 		while not G.has_edge(n1,n2) and edge[1]['capacity'] > 0.0:
 			if shortest_path_weight(G,n2,n1) + weight > 0.0:
 
 				#Go ahead and add the edge.
+				bid_announce(edge,n1,n2,'new')
 				G.add_edge(n1,n2,weight=weight,e=edge,q=[])
 			else:
-				print 'transaction possible; first edge'
+				bid_announce(edge,n1,n2,'new_winning')
 				transact_bid(G,n1,n2,edge)
 
 process_all_bids()
