@@ -1,6 +1,6 @@
 LIMIT=$RANDOM
 PERCENT=0.1
-head -10 nodes | awk '{print "node 1.0 " $1}' > tmp
+head -60 nodes | awk '{print "node 1.0 " $1}' > tmp
 awk '{print "person " $1}' people >> tmp
 for ((a=1; a <= LIMIT ; a++))
 do
