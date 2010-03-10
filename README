@@ -1,8 +1,11 @@
 Server for exchanging community currencies.
 
-Command-line only for now, still heavily in need of development.
+Uses the web.py framework or the command line to run.
 
 
-Examples to try:
 
-cat examples/equalbids | python daemon.py
+easy_install networkx
+easy_install pyplot.py
+easy_install web.py
+
+All code is licensed under the Affero GPL.
