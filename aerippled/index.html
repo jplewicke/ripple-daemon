@@ -1,0 +1,43 @@
+<html>
+	<head>
+		<title>
+			Ripple-Daemon Alternative Currency Exchange Service
+		</title>
+		<style type="text/css">
+			textarea {
+				width: 600px;
+				height: 120px;
+				border: 3px solid #cccccc;
+				padding: 5px;
+			}
+			{
+			font-family: Tahoma, sans-serif;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Exchange Service for Ripple</h1>
+
+		<form name="main" method="post">
+			
+						                <table>
+						    <tr><th><label for="Bidder Name">Bidder Name</label></th><td><input type="text" id="Bidder Name" name="Bidder Name" value="{{ bidder_name}}"/></td></tr>
+						    <tr><th><label for="Currency Owned">Currency Owned</label></th><td><input type="text" id="Currency Owned" name="Currency Owned" value="{{ currency_owned }}"/></td></tr>
+						    <tr><th><label for="Quantity Owned">Quantity Owned</label></th><td><input type="text" id="Quantity Owned" name="Quantity Owned"  value="{{ quantity_owned}}" /></td></tr>
+						    <tr><th><label for="Currency Wanted">Currency Wanted</label></th><td><input type="text" id="Currency Wanted" name="Currency Wanted"  value="{{ currency_wanted }}" /></td></tr>
+						    <tr><th><label for="Minimum Exchange Rate">Minimum Exchange Rate</label></th><td><input type="text" id="Minimum Exchange Rate" name="Minimum Exchange Rate"  value="{{ min_exchange_rate }}" /></td></tr>
+
+						    <tr><th><label for="Bids">Bids</label></th><td><textarea id="Bids" name="Bids">{{ bids }}</textarea></td></tr>
+						</table>
+
+		
+		<input type="submit" />    </form>
+
+
+			<table>
+				{% for o in output %}
+					<tr><td>{{ o }}</td></tr>
+				{% endfor %}
+			</table>
+	</body>
+</html>
