@@ -32,18 +32,38 @@ def get_pred_path(G,v1,v2):
 
 def find_min_capacity(edges):
     min_cap = float(1e3000)
+    
+    #If gain_adj is equal to 1.0, the most recent bid gets the very best price
+    #available in the graph of offers.  This is also dependent on the ordering passed in
+    #from get_pred_path and transact_bid.  If the surplus value in the transaction that's
+    #found should get shared amongst the various offers, this should be uncommented.
+    
+    #gain = 1.0
+    #for e in edges:
+    #    gain = gain * e[2][1]['gain']
+    #gain_adj = gain ** (1.0 / len(edges))
+  
+    gain_adj = 1.0
     gain = 1.0
-    for e in edges:
-        gain = gain * e[2][1]['gain']
-    gain_adj = gain ** (1.0 / len(edges))
 
-    gain = 1.0
-
+    #We find the level of gain needed to turn the original commodity into
+    #the each of the other commodities in this cycle, and find out which offer
+    #has the most constrained capacity.
+    
     for e in edges:
         min_cap = min(min_cap,e[2][1]['capacity'] * gain)
         gain = gain * e[2][1]['gain'] / gain_adj
 
-
+    #Once we have the minimum capacity, we carry it through the transaction to
+    #figure out how much of each offer to use.  Each offer's max capacity and
+    #minimum exchange ratio should be satisfied by the values used.
+    
+    #The format used here to pass the values around is a bit wonky.  It should
+    #eventually be a Transaction object with keys referencing the datastore Offers
+    #that make up the transaction.
+    
+    #I think the nontrans variable is just in there from old debugging, but am not sure.
+    
     gain = 1.0
     transaction = deque([])
     nontrans = deque([])
@@ -59,14 +79,17 @@ def find_min_capacity(edges):
     return transaction
 
 def transaction_announce(transaction):
+    
+    #Old output code.  Slightly fragile, should hopefully go away.
     output = []
     last_e = transaction[-1]
     for e in transaction:
-        output.append("%s gives %0.3f %s to %s." % (e[3].split('|')[1], e[2], e[0], last_e[3].split('|')[1]))
+        output.append("%s gives %0.3f %s to %s." % (e[3], e[2], e[0], last_e[3]))
         last_e = e
     return output
 
-def bid_announce(edge,n1,n2,type):
+def bid_announce(edge,n1,n2,type):    
+    #Old output code.  Slightly fragile, should hopefully go away.
     info = edge[1]['info']
 
     if len(info.split('|')) == 2:
@@ -84,12 +107,16 @@ def transact_bid(G,n1,n2,edge):
     #print "Path from %s to %s to %s" % (n1, n2, n1)
     output = []
     edges = get_pred_path(G,n2,n1)
-    edges.appendleft((n1,n2,edge))
+    edges.append((n1,n2,edge))
 
 
     transaction = find_min_capacity(edges)
     output.extend(transaction_announce(transaction))
 
+    #Perform necessary cleanup.  Sometimes the capacity of an offer is completely
+    #exhausted in the course of finding a transaction, and we have to take the proper
+    #steps to return the offer graph to the proper state.
+    
     for e in edges:
         if e[2][1]['capacity'] == 0:
             if e[2] == edge:
@@ -116,15 +143,15 @@ def transact_bid(G,n1,n2,edge):
 def process_bid(G,bid):
     output = []
     info = bid[0]
-    n1 = bid[1]
-    n2 = bid[2]
-    capacity = float(bid[3])
-    gain = 1.0 / float(bid[4])
-    weight= -1.0 * math.log10(1.0 / gain)
+    n1 = bid[2]
+    n2 = bid[3]
+    capacity = float(bid[4])
+    gain = 1.0 / float(bid[5])
+    weight= -1.0 * math.log10(gain)
 
     edge = (weight,{'capacity': capacity, 'gain': gain,'info': info})
 
-    #Make sure nodes(assets) already exist.
+    #Make sure nodes(commodities) already exist.
     G.add_node(n1)
     G.add_node(n2)
 

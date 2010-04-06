@@ -1,8 +1,10 @@
 application: rippledaemon
-version: 2
+version: 1
 runtime: python
 api_version: 1
 
 handlers:
 - url: /
   script: app.py
+- url: /process
+  script: batch_processing.py

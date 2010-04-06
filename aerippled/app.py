@@ -2,7 +2,9 @@ import os
 from google.appengine.ext.webapp import template
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
+import datamodel
 import rippletransact
+from google.appengine.ext import db
 
 
 def form_validates(req):
@@ -38,19 +40,34 @@ class MainPage(webapp.RequestHandler):
             template_values['output'] = ['Badly formatted bid.']
         else:
             bids = req.get("Bids").splitlines()
-            bids.append(u"bid%d|%s,%s,%s,%f,%f" % (
-                    len(bids),
+            bids.append(u"%s,bid%d,%s,%s,%f,%f" % (
                     req.get("Bidder Name"),
+                    len(bids),
                     req.get("Currency Owned"),
                     req.get("Currency Wanted"),
                     float(req.get("Quantity Owned")),
                     float(req.get("Minimum Exchange Rate"))))
+            bid_class = []
+            for bid in bids:
+                bid = bid.split(",")
+                offer = datamodel.Offer()
+                
+                offer.oauth_token = "fake oauth token"
+                offer.bidder_name = bid[0]
+                offer.currency_owned = bid[2]
+                offer.currency_wanted = bid[3]
+                offer.quantity_owned = float(bid[4])
+                offer.min_exchange_rate = float(bid[5])
+                
+                bid_class.append(offer)
+                
+            db.put(bid_class)
             template_values['bids'] = "\n".join(bids)
             template_values['output'] = rippletransact.process_all_bids(bids)
 
         path = os.path.join(os.path.dirname(__file__), 'index.html')
         self.response.out.write(template.render(path, template_values))
-
+        self.response.out.write(bid_class[0].created)
 
 application = webapp.WSGIApplication(
                                      [('/', MainPage)],
